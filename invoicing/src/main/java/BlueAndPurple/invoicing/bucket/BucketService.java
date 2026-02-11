@@ -1,0 +1,57 @@
+package BlueAndPurple.invoicing.bucket;
+
+import BlueAndPurple.invoicing.config.props.MinioProps;
+import io.minio.GetPresignedObjectUrlArgs;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
+import io.minio.http.Method;
+import org.springframework.stereotype.Service;
+
+import java.util.concurrent.TimeUnit;
+
+
+@Service
+public class BucketService {
+    private final MinioClient minioClient;
+    private final MinioProps minioProps;
+
+    public BucketService(MinioClient minioClient, MinioProps minioProps) {
+        this.minioClient = minioClient;
+        this.minioProps = minioProps;
+    }
+
+    public void upload(BucketFile file) {
+        try {
+            var object = PutObjectArgs
+                    .builder()
+                    .bucket(minioProps.getBucketName())
+                    .object(file.name())
+                    .stream(file.is(), file.size(), -1)
+                    .contentType(file.type().toString())
+                    .build();
+
+            minioClient.putObject(object);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getUrl(String fileName) {
+        try{
+            var object = GetPresignedObjectUrlArgs.builder()
+                    .method(Method.GET)
+                    .bucket(minioProps.getBucketName())
+                    .object(fileName)
+                    .expiry(7, TimeUnit.DAYS)
+                    .build();
+
+           return minioClient.getPresignedObjectUrl(object);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
+}

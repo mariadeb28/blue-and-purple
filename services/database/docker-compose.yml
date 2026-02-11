@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres
+    container_name: db_BlueAndPurple
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mitosemeiose
+      POSTGRES_MULTIPLE_DATABASE: blueandpurpleproducts, blueandpurpleorders, blueandpurpleclients
+    ports:
+      - "5555:5432"
+    volumes:
+      - C:/services/data:/app/data
